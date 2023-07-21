@@ -11,6 +11,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('RecoMuon.Configuration.RecoMuon_cff')
 process.load("DQM.GEM.GEMDQM_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -22,7 +23,33 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:/eos/cms/tier0/store/data/Run2023C/RPCMonitor/RAW/v1/000/367/619/00000/bf6e97ca-972b-4ae8-9954-64f9c19eb81f.root'),
+    fileNames = cms.untracked.vstring(
+        # 'file:/eos/user/j/jheo/367260/7ad6f18d-508a-4510-af6b-79efb5b12518.root',
+        # 'file:/eos/user/j/jheo/367260/8c216ef1-5937-4001-b72f-d8e4db8b8719.root',
+        # 'file:/eos/user/j/jheo/367260/0df11715-7d7e-40d0-8647-029d8b1c0b39.root',
+        # 'file:/eos/user/j/jheo/367260/99f1bfe2-cc1f-45f5-a750-c004d49aa362.root',
+        # 'file:/eos/user/j/jheo/367260/771246b2-7e26-4f33-a8bd-64f28b9e32de.root',
+        # 'file:/eos/user/j/jheo/367260/5d6ca20c-d431-4a25-aebe-99c6a4124882.root',
+        # 'file:/eos/user/j/jheo/367260/cd7ed057-bf9e-4425-b340-d21f380c78bc.root',
+        # 'file:/eos/user/j/jheo/367260/43ce1b4e-6e33-4086-b9c1-c215ffb00dfc.root',
+        # 'file:/eos/user/j/jheo/367260/8aa2b5f9-1cbc-41f7-874d-efd0d301950f.root',
+        # 'file:/eos/user/j/jheo/367260/f41e4284-6212-464a-8571-bfe661a4322f.root',
+        # 'file:/eos/user/j/jheo/367260/9b48c621-1133-41f9-9f2e-26d3db799aa3.root',
+        # 'file:/eos/user/j/jheo/367260/7822b93b-6efe-4b25-97b5-964f6fa5fa48.root',
+        # 'file:/eos/user/j/jheo/367260/c6e86ae8-b5a7-4b0e-8bbb-76f8e203bacb.root',
+        # 'file:/eos/user/j/jheo/367260/d03c6273-a4df-48a8-b3f1-9b828163ee71.root',
+        # 'file:/eos/user/j/jheo/367260/e9222918-f42a-4975-a313-a97e318bc60f.root',
+        # 'file:/eos/user/j/jheo/367260/0b4384ac-f9ce-439d-a806-417256e17f40.root',
+        # 'file:/eos/user/j/jheo/367260/72041e13-6699-407f-bd21-28a8bedc2edb.root',
+        # 'file:/eos/user/j/jheo/367260/66f36fb6-6129-4009-9b64-4bb44ba42b6f.root',
+        # 'file:/eos/user/j/jheo/367260/808a5558-ac9c-468a-88df-e44b6050ecdf.root',
+        # 'file:/eos/user/j/jheo/367260/ad3dfaf4-6c32-48be-8537-9d940f912b49.root',
+        # 'file:/eos/user/j/jheo/367260/4368573d-b137-4c12-b866-2b3655ea3e1f.root',
+        # 'file:/eos/user/j/jheo/367260/832822ba-edf7-42d2-9f53-91cd3d3e357f.root',
+        # 'file:/eos/user/j/jheo/367260/1c153f66-fc56-4c58-947d-753f4d0eb804.root',
+        # 'file:/eos/cms/tier0/store/data/Run2023C/RPCMonitor/RAW/v1/000/367/619/00000/bf6e97ca-972b-4ae8-9954-64f9c19eb81f.root'
+        'file:/afs/cern.ch/user/j/jheo/rpc-monitor/gemdigi_CMSSW/src/outputRPCMON.root'
+        ),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -73,9 +100,7 @@ process.RECOoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     fileName = cms.untracked.string('step3_RECO_DQM.root'),
-    outputCommands = cms.untracked.vstring("drop *",
-                                           "keep *_standAloneMuons_*_*",
-                                           "keep *_muons1stStep_*_*",
+    outputCommands = cms.untracked.vstring("keep *"
                                            ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -115,7 +140,7 @@ process.muons1stStep = muons1stStep.clone(
     storeCrossedHcalRecHits = False,
     fillMatching = False,
     writeIsoDeposits = False,
-    arbitrateTrackerMuons = False,    
+    arbitrateTrackerMuons = False,
     selectHighPurity = False,
     TrackAssociatorParameters = dict(
 	useHO   = False,
@@ -154,9 +179,18 @@ process.muons = muons.clone(
     ComputeStandardSelectors = cms.bool(False),
 )
 
-process.standalonemuontrackingTask = cms.Task(process.standAloneMuons,process.muons1stStep,process.muons)
-process.reconstruction_step = cms.Path(process.standalonemuontrackingTask)
 
+process.standalonemuontrackingTask = cms.Task(process.standAloneMuons,process.muons1stStep,process.muons)
+# process.muonGEMDigis.InputLabel = cms.InputTag("FEDRawDataCollection")
+process.muonGEMDigis.keepDAQStatus = cms.bool(True)
+process.muonGEMDigis.InputLabel = cms.InputTag("hltFEDSelectorGEM")
+process.raw2digi_step = cms.Path(process.muonGEMDigis)
+process.reconstruction_step = cms.Path(process.standalonemuontrackingTask)
+process.load("RecoLocalMuon.GEMRecHit.gemLocalReco_cff")
+# process.gemRecHits.gemDigiLabel = cms.InputTag("hltMuonGEMDigis")
+process.recohits_step = cms.Path(process.gemLocalReco)
+
+from DQM.GEM.GEMDigiSource_cfi import *
 from DQM.GEM.GEMRecHitSource_cfi import *
 from DQM.GEM.GEMDAQStatusSource_cfi import *
 from DQM.GEM.GEMDQMHarvester_cfi import *
@@ -183,14 +217,18 @@ process.gemEfficiencyAnalyzerSta = gemEfficiencyAnalyzer.clone(
     #maskChamberWithError = cms.untracked.bool(True)
 )
 
-# process.GEMDQM = cms.Sequence(GEMRecHitSource*GEMDAQStatusSource*process.gemEfficiencyAnalyzerSta+GEMDQMHarvester)
-process.GEMDQM = cms.Sequence(GEMRecHitSource*GEMDAQStatusSource*process.gemEfficiencyAnalyzerSta)
-#process.GEMDQM = cms.Sequence(GEMRecHitSource*GEMDAQStatusSource+GEMDQMHarvester)
+# process.GEMDQM = cms.Sequence(GEMDigiSource*GEMRecHitSource*GEMDAQStatusSource*process.gemEfficiencyAnalyzerSta)
+# process.GEMDQM = cms.Sequence(GEMDigiSource*GEMRecHitSource*GEMDAQStatusSource*process.gemEfficiencyAnalyzerSta+GEMDQMHarvester)
+process.GEMDigiSource.runType = "offline"
+process.GEMRecHitSource.runType = "offline"
+process.GEMDAQStatusSource.runType = "offline"
+process.GEMDQM = cms.Sequence(GEMDigiSource*GEMRecHitSource*GEMDAQStatusSource*GEMDQMHarvester*process.gemEfficiencyAnalyzerSta)
 
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = "GEM"
 process.dqmEnv.eventInfoFolder = "EventInfo"
-process.dqmSaver.path = "/eos/user/j/jheo/"
+process.dqmSaver.path = ""
+process.dqmSaver.tag = "GEM"
 
 process.end_path = cms.EndPath(process.dqmEnv+process.dqmSaver)
 
@@ -207,15 +245,7 @@ process.standAloneMuons.STATrajBuilderParameters.FilterParameters.RPCRecSegmentL
 #process.standAloneMuons.TrackLoaderParameters.VertexConstraint = cms.bool(False)
 
 
-process.GEMRecHitSource.recHitsInputLabel = cms.InputTag("hltGemRecHits")
-process.GEMDAQStatusSource.AMC13InputLabel = cms.InputTag("hltMuonGEMDigis","AMC13Status")
-process.GEMDAQStatusSource.AMCInputLabel = cms.InputTag("hltMuonGEMDigis","AMCStatus")
-process.GEMDAQStatusSource.OHInputLabel = cms.InputTag("hltMuonGEMDigis","OHStatus")
-process.GEMDAQStatusSource.VFATInputLabel = cms.InputTag("hltMuonGEMDigis","VFATStatus")
 process.gemEfficiencyAnalyzerSta.ServiceParameters.GEMLayers = cms.untracked.bool(False)
-process.gemEfficiencyAnalyzerSta.ohStatusTag = cms.untracked.InputTag("hltMuonGEMDigis","OHStatus")
-process.gemEfficiencyAnalyzerSta.recHitTag = cms.untracked.InputTag("hltGemRecHits")
-process.gemEfficiencyAnalyzerSta.vfatStatusTag = cms.untracked.InputTag("hltMuonGEMDigis","VFATStatus")
 
 #process.GEMDQM = cms.Sequence(GEMRecHitSource+GEMDAQStatusSource+GgemEfficiencyAnalyzerStaSeqEMDQMHarvester)
 process.dqmoffline_step = cms.EndPath(process.GEMDQM)
@@ -224,8 +254,10 @@ process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 
 # Schedule definition
 #process.schedule = cms.Schedule(process.reconstruction_step,process.dqmoffline_step,process.RECOoutput_step,process.end_path)
-# process.schedule = cms.Schedule(process.reconstruction_step,process.dqmoffline_step,process.end_path)
-process.schedule = cms.Schedule(process.reconstruction_step,process.dqmoffline_step,process.DQMoutput_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.recohits_step,process.dqmoffline_step,process.RECOoutput_step,process.end_path)
+# process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.recohits_step,process.dqmoffline_step,process.DQMoutput_step)
+# process.schedule = cms.Schedule(process.reconstruction_step,process.recohits_step,process.dqmoffline_step,process.RECOoutput_step)
+# process.schedule = cms.Schedule(process.reconstruction_step,process.recohits_step,process.RECOoutput_step)
 
 process.MessageLogger.cerr.threshold = "DEBUG"
 process.MessageLogger.debugModules = ["gemEfficiencyAnalyzerSta"]
@@ -241,7 +273,7 @@ process.MessageLogger.debugModules = ["gemEfficiencyAnalyzerSta"]
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 options.parseArguments()
-process.source.fileNames = cms.untracked.vstring('file:'+options.inputFiles[0])
-process.DQMoutput.fileName = cms.untracked.string('file:'+options.outputFile)
+# process.source.fileNames = cms.untracked.vstring('file:'+options.inputFiles[0])
+# process.DQMoutput.fileName = cms.untracked.string('file:'+options.outputFile)
 # process.dqmSaver.tag = options.outputFile
 
